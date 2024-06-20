@@ -8,7 +8,8 @@ from tenpy.algorithms import dmrg
 from tenpy.models.model import CouplingModel, CouplingMPOModel
 import pickle, time
 
-out_dir = "/home/tenkila2/scratch/DMRG_out/"
+#out_dir = "/home/tenkila2/scratch/DMRG_out/"
+out_dir = "/home/gaurav/Projects/DMRG_HK/output/"
 
 st_time = time.time()
 # Parameters
@@ -16,11 +17,11 @@ U = 10.0
 t = 1.0
 mu = 0  # Chemical potential (often set to 0 for simplicity at half filling)
 chi_max = 2000  # Maximum bond dimension
-sweeps = 100  # Number of DMRG sweeps
-k_num = 10
+sweeps = 40  # Number of DMRG sweeps
+k_num = 4
 
-Lx_list = [2, 4, 6, 8]
-Ly_list = [2, 4]
+Lx_list = [2, 4, 6, 8, 10]
+Ly_list = [2]
 GS_list = np.zeros(shape=(len(Lx_list), len(Ly_list)))
 
 
@@ -91,9 +92,11 @@ def run_dmrg_2d(Lx, Ly, U, tx, ty, mu, chi_max, sweeps, charge=0):
     E0, psi = eng.run()
     return E0
 
+time_list = np.zeros(shape=(len(Lx_list), len(Ly_list)))
 for i, Lx in enumerate(Lx_list):
     for j, Ly in enumerate(Ly_list):
         print(Lx, Ly)
+        st_time_ind = time.time()
         energy_arr = np.zeros(k_num)
         for ky in range(-int(k_num/2), int(k_num/2)):
             ty = t*np.exp(1j*ky/k_num*np.pi)
@@ -101,7 +104,8 @@ for i, Lx in enumerate(Lx_list):
             ground_state_energy = run_dmrg_2d(Lx, Ly, U, tx, ty, mu, chi_max, sweeps)/Ly
             energy_arr[ky+int(k_num/2)] = ground_state_energy
         GS_list[i,j] = energy_arr.mean()/Lx
-        
+        time_list[i,j] = time.time() - st_time_ind
+        print(time_list[i,j])
 data_dict = {}
 data_dict['GS_list'] = GS_list
 data_dict['Lx_list'] = Lx_list
@@ -113,6 +117,7 @@ data_dict['chi_max'] = chi_max
 data_dict['sweeps'] = sweeps
 data_dict['duration'] = time.time() - st_time
 data_dict['k_num'] = k_num
+data_dict['time_list'] = time_list
 print(data_dict['duration'])
 #Give file a unique name with timestamp and unique serial number
 
