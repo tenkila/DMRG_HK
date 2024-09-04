@@ -17,11 +17,11 @@ U = 10.0
 t = 1.0
 mu = 0  # Chemical potential (often set to 0 for simplicity at half filling)
 chi_max = 2000  # Maximum bond dimension
-sweeps = 40  # Number of DMRG sweeps
+sweeps = 50  # Number of DMRG sweeps
 k_num = 4
 
-Lx_list = [2, 4, 6, 8, 10]
-Ly_list = [2]
+Lx_list = [4]
+Ly_list = [4]
 GS_list = np.zeros(shape=(len(Lx_list), len(Ly_list)))
 
 
