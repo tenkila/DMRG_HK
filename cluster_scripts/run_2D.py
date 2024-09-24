@@ -8,19 +8,19 @@ from tenpy.algorithms import dmrg
 from tenpy.models.model import CouplingModel, CouplingMPOModel
 import pickle, time
 
-#out_dir = "/home/tenkila2/scratch/DMRG_out/"
-out_dir = "/home/gaurav/Projects/DMRG_HK/output/"
+out_dir = "/home/tenkila2/scratch/DMRG_out/"
+#out_dir = "/home/gaurav/Projects/DMRG_HK/output/"
 
 st_time = time.time()
 # Parameters
-U = 10.0  
+U = 6.0  
 t = 1.0
 mu = 0  # Chemical potential (often set to 0 for simplicity at half filling)
 chi_max = 2000  # Maximum bond dimension
 sweeps = 50  # Number of DMRG sweeps
-k_num = 4
+k_num = 6
 
-Lx_list = [4]
+Lx_list = [4, 6, 8]
 Ly_list = [4]
 GS_list = np.zeros(shape=(len(Lx_list), len(Ly_list)))
 

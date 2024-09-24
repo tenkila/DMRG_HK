@@ -2,11 +2,8 @@
 
 import numpy as np
 from tenpy.networks.mps import MPS
-from tenpy.networks.site import SpinHalfFermionSite
-from tenpy.models.lattice import Chain
-from tenpy.models import lattice
+from tenpy.models.hubbard import FermiHubbardModel
 from tenpy.algorithms import dmrg
-from tenpy.models.model import CouplingModel, CouplingMPOModel
 import pickle, time
 
 out_dir = "/home/tenkila2/scratch/DMRG_out/"
