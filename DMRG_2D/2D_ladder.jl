@@ -2,6 +2,15 @@ using ITensors, ITensorMPS, Statistics  # Import ITensor library and MPS/MPO fun
 
 # Construct the 2D Hubbard model Hamiltonian as an MPO for given twist phase in x-direction.
 # `sites` is the site index set (with "Electron" site indices), and tx (complex) / ty (real) are hopping amplitudes 
+function snake_index(x, y, Lx, Ly)
+    if isodd(y)
+        return (y - 1) * Lx + x
+    else
+        return (y - 1) * Lx + (Lx - x + 1)
+    end
+end
+
+
 # in the x and y directions respectively. U is the onsite repulsion.
 function build_hubbard_mpo(sites, Lx, Ly, U, tx, ty)
     ampo = AutoMPO()  # AutoMPO for building sum of operators
@@ -14,12 +23,12 @@ function build_hubbard_mpo(sites, Lx, Ly, U, tx, ty)
     for x in 1:Lx
         for y in 1:Ly
             # Linear index for site (x, y)
-            local_i = (x - 1) * Ly + y
+            local_i = snake_index(x, y, Lx, Ly)
             
             # Hopping in the x-direction (periodic boundary in x):
             # Determine the neighbor in +x direction (with wrap-around)
             neighbor_x = (x == Lx ? 1 : x + 1)
-            local_jx = (neighbor_x - 1) * Ly + y
+            local_jx = snake_index(neighbor_x, y, Lx, Ly)  # neighbor in x-direction
             # Add hopping terms for spin-up and spin-down (tx may be complex)
             # Use tx for i->j and conj(tx) for j->i to ensure Hermitian conjugate
             ampo += -tx,        "Cdagup", local_i, "Cup",  local_jx   # c†_{i↑} c_{j↑} with phase
@@ -30,7 +39,7 @@ function build_hubbard_mpo(sites, Lx, Ly, U, tx, ty)
             # Hopping in the y-direction (open boundary in y):
             if y < Ly
                 # Neighbor in +y direction (no wrap, open boundary)
-                local_jy = (x - 1) * Ly + (y + 1)
+                local_jy = snake_index(x, y + 1, Lx, Ly)  # neighbor in y-direction
                 # Add hopping terms for spin-up and spin-down (ty is real)
                 ampo += -ty, "Cdagup", local_i, "Cup",  local_jy
                 ampo += -ty, "Cdagup", local_jy, "Cup", local_i      # Hermitian conjugate (ty real ⇒ same coef)
@@ -62,7 +71,7 @@ function run_dmrg(H::MPO, sites)
     # Set DMRG sweep parameters: number of sweeps, max bond dimensions, and truncation cutoff.
     # (These can be adjusted for convergence as needed.)
     nsweeps = 20
-    maxdim = [100, 200, 400, 800, 1600, 3200]   # increasing max bond dimension per sweep
+    maxdim = [100, 200, 400, 800, 1600, 2000]   # increasing max bond dimension per sweep
     cutoff = 1e-7                      # truncation cutoff for Schmidt values
     
     # Run the DMRG algorithm to find the ground state. 
@@ -123,7 +132,7 @@ end
 
 # Example usage:
 # Sweep over Lx = 2, 4, 6 at fixed Ly = 4, U = 8.0, t = 1.0, k_num = 5
-Lx_list = [4, 6, 8, 10]
+Lx_list = [4, 6, 8]
 Ly = 2
 U = 4.0
 t = 1.0
